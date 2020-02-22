@@ -1,0 +1,16 @@
+# .coveragerc to control coverage.py
+[run]
+source = .
+omit =
+    setup.py
+    tests/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    pass
+
+ignore_errors = True
+
+[html]
+directory = coverage_report
