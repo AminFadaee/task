@@ -1,0 +1,5 @@
+.idea
+**/__pycache__
+coverage_report
+task.egg-info
+.coverage
