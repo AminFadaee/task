@@ -3,6 +3,8 @@ from typing import List, Set
 from .abstract import Task, Tasks
 from .errors import UniqueViolationError, ConflictError
 
+def hello_world():
+    print('hello')
 
 class SimpleTasks(Tasks):
     class SimpleTask(Task):
