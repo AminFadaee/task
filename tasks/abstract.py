@@ -2,18 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List
 
 
-class Task(ABC):
-    def __init__(self, name: str):
-        self.name = name
-        self.done = False
-
-    def finish(self):
-        self.done = True
-
-    def __eq__(self, other):
-        return self.name == other.name and self.done == other.done
-
-
 class Tasks(ABC):
     def __init__(self, name: str):
         self.name = name
