@@ -58,8 +58,10 @@ def list_entries(group, unfinished_tasks):
 @click.argument('entry', nargs=-1, required=True)
 def finish(group, entry):
     entry = ' '.join(word for word in entry)
-    ClientManagerFactory.create(group).finish_entry(entry)
-    click.secho(f'Congrats! Entry {entry} is finished!', fg='66FF00')
+    manager = ClientManagerFactory.create(group)
+    full_name = manager.get_entry_full_name(entry)
+    manager.finish_entry(full_name)
+    click.secho(f'Congrats! Entry {full_name} is finished!')
 
 
 @task.command(help=config.EXPORT_HELP)

@@ -32,12 +32,14 @@ class ConcreteTasksManager(TasksManager):
 
     def add_entry(self, entry: str):
         global storage
-        if storage.get(self.name) == entry:
+        if storage.get(self.name, None) and entry in storage[self.name]:
             raise UniqueViolationError
-        storage[self.name] = entry
+        storage[self.name] = storage.get(self.name, []) + [entry]
 
     def finish_entry(self, entry: str):
-        pass
+        global storage
+        index = storage[self.name].index(entry)
+        storage[self.name][index] = storage[self.name][index] + ' done'
 
     def retrieve(self):
         global storage
@@ -83,31 +85,31 @@ class TestClient(TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task_1'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task_1', storage['work'])
+            self.assertEqual('task_1', storage['work'][0])
 
     def test_add_accepts_entry_with_spaces(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'this', 'is', 'an', 'entry', 'with', 'spaces'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('this is an entry with spaces', storage['work'])
+            self.assertEqual('this is an entry with spaces', storage['work'][0])
 
     def test_add_correctly_adds_to_an_already_existing_group(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task 1'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task 1', storage['work'])
+            self.assertEqual('task 1', storage['work'][0])
             result = runner.invoke(add, ['work', 'task 2'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task 2', storage['work'])
+            self.assertEqual('task 2', storage['work'][1])
 
     def test_add_prints_error_when_entry_already_exists(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task 1'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task 1', storage['work'])
+            self.assertEqual('task 1', storage['work'][0])
             result = runner.invoke(add, ['work', 'task 1'])
             self.assertEqual(0, result.exit_code)
             self.assertTrue(config.ADD_FAILED.format(group='work', entry='task 1') in result.output)
@@ -124,7 +126,7 @@ class TestClient(TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task', storage['work'])
+            self.assertEqual('task', storage['work'][0])
             result = runner.invoke(edit, ['work', 'task'], input='another task')
             msg = config.EDIT_SUCCESS.format(entry='task', new_entry='another task', group='work')
             self.assertEqual(0, result.exit_code)
@@ -168,31 +170,31 @@ class TestClient(TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task_1'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task_1', storage['work'])
+            self.assertEqual('task_1', storage['work'][0])
 
     def test_edit_accepts_entry_with_spaces(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'this', 'is', 'an', 'entry', 'with', 'spaces'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('this is an entry with spaces', storage['work'])
+            self.assertEqual('this is an entry with spaces', storage['work'][0])
 
     def test_edit_correctly_adds_to_an_already_existing_group(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task 1'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task 1', storage['work'])
+            self.assertEqual('task 1', storage['work'][0])
             result = runner.invoke(add, ['work', 'task 2'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task 2', storage['work'])
+            self.assertEqual('task 2', storage['work'][1])
 
     def test_edit_does_not_print_error_when_entry_already_exists(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task 1'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task 1', storage['work'])
+            self.assertEqual('task 1', storage['work'][0])
             result = runner.invoke(add, ['work', 'task 1'])
             self.assertEqual(0, result.exit_code)
             self.assertTrue(config.ADD_FAILED.format(group='work', entry='task 1') in result.output)
@@ -232,6 +234,15 @@ class TestClient(TestCase):
             result = runner.invoke(finish, ['--help'])
             self.assertEqual(0, result.exit_code)
             self.assertTrue(config.FINISH_HELP in result.output)
+
+    def test_finish_finishes_an_entry(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(add, ['work', 'task 1'])
+            runner.invoke(add, ['work', 'task 2'])
+            runner.invoke(finish, ['work', 'task 1'])
+            # in the mock, the word 'done' gets appended to the name once finish_entry is called
+            self.assertEqual('task 1 done', storage['work'][0])
 
     def test_export_helps_outputs_the_help(self):
         runner = CliRunner()
