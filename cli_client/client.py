@@ -64,6 +64,17 @@ def finish(group, entry):
     click.secho(f'Congrats! Entry {full_name} is finished!')
 
 
+@task.command(help=config.UNDO_HELP)
+@click.argument('group', nargs=1)
+@click.argument('entry', nargs=-1, required=True)
+def undo(group, entry):
+    entry = ' '.join(word for word in entry)
+    manager = ClientManagerFactory.create(group)
+    full_name = manager.get_entry_full_name(entry)
+    manager.undo_entry(full_name)
+    click.secho(f'Entry {full_name} was reverted back to unfinished!')
+
+
 @task.command(help=config.EXPORT_HELP)
 @click.argument('group', nargs=1)
 @click.option('--txt', 'format', flag_value='txt', default=True, help=config.EXPORT_TXT_HELP)

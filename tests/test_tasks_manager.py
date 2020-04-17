@@ -48,6 +48,19 @@ class TestTasksManager(TestCase):
         tasks_manager.finish_entry(entry='job 1')
         self.assertEqual(file['./work.foo'], {'group': 'work', 'tasks': [{'done': True, 'name': 'job 1'}]})
 
+    def test_tasks_manager_undo_undoes_an_entry_for_and_existing_entry(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('job 1')
+        tasks_manager.finish_entry(entry='job 1')
+        tasks_manager.undo_entry(entry='job 1')
+        self.assertEqual(file['./work.foo'], {'group': 'work', 'tasks': [{'done': False, 'name': 'job 1'}]})
+
+    def test_tasks_manager_undo_creates_new_entry_for_non_existing_ones(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.undo_entry(entry='job 1')
+        self.assertTrue('./work.foo' in file)
+        self.assertEqual(file['./work.foo'], {'group': 'work', 'tasks': [{'done': False, 'name': 'job 1'}]})
+
     def test_tasks_manager_retrieve_returns_a_tasks(self):
         tasks_manager = SimpleTasksManager('work', self.storage)
         tasks = tasks_manager.retrieve()

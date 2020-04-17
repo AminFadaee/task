@@ -11,6 +11,7 @@ EDIT_FAILED_CONFLICT = 'More than one entry match for {entry} in {group}!'
 FAILED_LOOKUP = 'Entry {entry} not found in {group}!'
 
 FINISH_HELP = 'Finish an entry in a specific group (accepts non-existing entries).'
+UNDO_HELP = 'Undo a finished entry in a specific group (accepts non-existing entries).'
 GROUP_HELP = 'Add a group of tasks.'
 
 LIST_HELP = 'List all the entries in a group.'

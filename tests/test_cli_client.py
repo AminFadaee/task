@@ -4,7 +4,7 @@ from click.testing import CliRunner
 
 from cli_client import client
 from cli_client import config
-from cli_client.client import task, add, edit, finish, list_entries, export
+from cli_client.client import task, add, edit, finish, list_entries, export, undo
 from cli_client.factory import ClientManagerFactory
 from manager.abstract import TasksManager
 from tasks.errors import UniqueViolationError, ConflictError
@@ -40,6 +40,12 @@ class ConcreteTasksManager(TasksManager):
         global storage
         index = storage[self.name].index(entry)
         storage[self.name][index] = storage[self.name][index] + ' done'
+
+    def undo_entry(self, entry: str) -> str:
+        global storage
+        index = storage[self.name].index(entry + ' done')
+        if storage[self.name][index].endswith(' done'):
+            storage[self.name][index] = storage[self.name][index][:-5]
 
     def retrieve(self):
         global storage
@@ -243,6 +249,23 @@ class TestClient(TestCase):
             runner.invoke(finish, ['work', 'task 1'])
             # in the mock, the word 'done' gets appended to the name once finish_entry is called
             self.assertEqual('task 1 done', storage['work'][0])
+
+    def test_undo_helps_outputs_the_help(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(undo, ['--help'])
+            self.assertEqual(0, result.exit_code)
+            print(result.output)
+            self.assertTrue(config.UNDO_HELP in result.output)
+
+    def test_undo_undoes_an_entry(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(add, ['work', 'task 1'])
+            runner.invoke(add, ['work', 'task 2'])
+            runner.invoke(finish, ['work', 'task 1'])
+            runner.invoke(undo, ['work', 'task 1'])
+            self.assertEqual('task 1', storage['work'][0])
 
     def test_export_helps_outputs_the_help(self):
         runner = CliRunner()

@@ -35,6 +35,15 @@ class SimpleTasksManager(TasksManager):
         self.storage.put(tasks)
         return tasks[entry].name
 
+    def undo_entry(self, entry: str) -> str:
+        tasks = self.retrieve()
+        if tasks.has(entry):
+            tasks[entry].undo()
+        else:
+            tasks.add(entry)
+        self.storage.put(tasks)
+        return tasks[entry].name
+
     def retrieve(self) -> SimpleTasks:
         if self._tasks is None:
             self._tasks = self.storage.get(self._tasks_name)

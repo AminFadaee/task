@@ -22,6 +22,13 @@ class TestTask(TestCase):
         task.finish()
         self.assertEqual(True, task.done)
 
+    def test_task_state_is_unfinished_when_undo_is_called(self):
+        task = self.Task('my tasks')
+        task.finish()
+        self.assertEqual(True, task.done)
+        task.undo()
+        self.assertEqual(False, task.done)
+
     def test_task_equality_works_correctly(self):
         task1 = self.Task('my tasks')
         task2 = self.Task('my tasks')

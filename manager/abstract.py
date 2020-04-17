@@ -29,6 +29,10 @@ class TasksManager(ABC):
         pass
 
     @abstractmethod
+    def undo_entry(self, entry: str) -> str:
+        pass
+
+    @abstractmethod
     def retrieve(self) -> Tasks:
         pass
 
