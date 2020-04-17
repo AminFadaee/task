@@ -28,27 +28,26 @@ class SimpleTasks(Tasks):
         self._task_names.add(task_name)
         return task
 
-    def __getitem__(self, item: str):
-        for task in self._tasks:
-            if task.name == item:
-                return task
+    def _find_task_index_based_on_full_match_or_prefix_match_on_name(self, task_name):
+        matched_indices = []
+        for index, task in enumerate(self._tasks):
+            if task.name == task_name:
+                return index
+            elif task.name.startswith(task_name):
+                matched_indices.append(index)
+        if len(matched_indices) > 1:
+            raise ConflictError('More than one tasks matched!')
+        if len(matched_indices) == 1:
+            return matched_indices[0]
         raise LookupError('Task not found!')
 
-    def __setitem__(self, key, value):
-        prefixed_matched_tasks = []
-        for task in self._tasks:
-            if task.name == key:
-                task.name = value
-                return
-            elif task.name.startswith(key):
-                prefixed_matched_tasks.append(task)
-        if len(prefixed_matched_tasks) == 0:
-            raise LookupError('Task not found!')
-        elif len(prefixed_matched_tasks) == 1:
-            prefixed_matched_tasks[0].name = value
-            return
-        else:
-            raise ConflictError('More than one tasks matched!')
+    def __getitem__(self, task_name: str):
+        index = self._find_task_index_based_on_full_match_or_prefix_match_on_name(task_name)
+        return self._tasks[index]
+
+    def __setitem__(self, task_name, new_name: str):
+        index = self._find_task_index_based_on_full_match_or_prefix_match_on_name(task_name)
+        self._tasks[index].name = new_name
 
     def __eq__(self, other):
         other_tasks = other.all()

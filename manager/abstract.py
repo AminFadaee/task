@@ -9,11 +9,15 @@ class TasksManager(ABC):
     _tasks_name: str
 
     @abstractmethod
-    def add_entry(self, entry: str):
+    def get_entry_full_name(self, partial_name):
         pass
 
     @abstractmethod
-    def edit_entry(self, entry: str, new_entry: str):
+    def add_entry(self, entry: str) -> str:
+        pass
+
+    @abstractmethod
+    def edit_entry(self, entry: str, new_entry: str) -> str:
         pass
 
     @property
@@ -21,7 +25,11 @@ class TasksManager(ABC):
         return self.storage.path(self._tasks_name)
 
     @abstractmethod
-    def finish_entry(self, entry: str):
+    def finish_entry(self, entry: str) -> str:
+        pass
+
+    @abstractmethod
+    def undo_entry(self, entry: str) -> str:
         pass
 
     @abstractmethod

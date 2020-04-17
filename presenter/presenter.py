@@ -19,9 +19,11 @@ class TextPresenter(Presenter):
         chunks[0] = status + chunks[0][4:]
         return '\n'.join(chunks)
 
-    def present(self):
+    def present(self, only_unfinished_tasks=False):
         output = f'{self.title}\n{self.line}'
         for task in self.tasks.all():
+            if only_unfinished_tasks and task.done:
+                continue
             output = f'{output}\n{self.present_task(task)}'
         return f'{output}\n{self.line}'
 

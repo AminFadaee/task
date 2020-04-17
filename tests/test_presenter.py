@@ -22,6 +22,21 @@ class TestPresenter(TestCase):
                    '==========='
         self.assertEqual(expected, TextPresenter(tasks, 60).present())
 
+    def test_text_presenter_presents_only_unfinished_tasks_correctly(self):
+        tasks = SimpleTasks('work')
+        tasks.add('tasks 1')
+        tasks.add('tasks 2')
+        tasks.add('tasks 3')
+        tasks.add('tasks 4')
+        tasks['tasks 1'].finish()
+        tasks['tasks 4'].finish()
+        expected = '    Work\n' \
+                   '===========\n' \
+                   '[ ] tasks 2\n' \
+                   '[ ] tasks 3\n' \
+                   '==========='
+        self.assertEqual(expected, TextPresenter(tasks, 60).present(only_unfinished_tasks=True))
+
     def test_text_presenter_presents_tasks_correctly_wraps_big_task_name(self):
         tasks = SimpleTasks('work')
         tasks.add('this is a long text!')

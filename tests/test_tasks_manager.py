@@ -48,6 +48,19 @@ class TestTasksManager(TestCase):
         tasks_manager.finish_entry(entry='job 1')
         self.assertEqual(file['./work.foo'], {'group': 'work', 'tasks': [{'done': True, 'name': 'job 1'}]})
 
+    def test_tasks_manager_undo_undoes_an_entry_for_and_existing_entry(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('job 1')
+        tasks_manager.finish_entry(entry='job 1')
+        tasks_manager.undo_entry(entry='job 1')
+        self.assertEqual(file['./work.foo'], {'group': 'work', 'tasks': [{'done': False, 'name': 'job 1'}]})
+
+    def test_tasks_manager_undo_creates_new_entry_for_non_existing_ones(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.undo_entry(entry='job 1')
+        self.assertTrue('./work.foo' in file)
+        self.assertEqual(file['./work.foo'], {'group': 'work', 'tasks': [{'done': False, 'name': 'job 1'}]})
+
     def test_tasks_manager_retrieve_returns_a_tasks(self):
         tasks_manager = SimpleTasksManager('work', self.storage)
         tasks = tasks_manager.retrieve()
@@ -61,6 +74,27 @@ class TestTasksManager(TestCase):
         tasks_manager = SimpleTasksManager('work', self.storage)
         tasks_manager.add_entry('job 1')
         self.assertRaises(UniqueViolationError, tasks_manager.add_entry, 'job 1')
+
+    def test_manager_edit_renames_task_correctly(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('job 1')
+        tasks_manager.edit_entry('job 1', 'one job')
+        self.assertEqual(1, len(file['./work.foo']['tasks']))
+        self.assertEqual('one job', file['./work.foo']['tasks'][0]['name'])
+
+    def test_manager_edit_renames_task_correctly_given_partial_match_of_task_name_based_on_name_prefix(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('one job')
+        tasks_manager.edit_entry('one', 'yet another job')
+        self.assertEqual(1, len(file['./work.foo']['tasks']))
+        self.assertEqual('yet another job', file['./work.foo']['tasks'][0]['name'])
+
+    def test_manager_get_full_name_get_the_complete_name_of_the_entry_correctly(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('one job')
+        tasks_manager.add_entry('two job')
+        tasks_manager.add_entry('three job')
+        self.assertEqual('one job', tasks_manager.get_entry_full_name('one'))
 
     def tearDown(self) -> None:
         global file

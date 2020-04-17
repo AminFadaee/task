@@ -10,6 +10,9 @@ class Task(ABC):
     def finish(self):
         self.done = True
 
+    def undo(self):
+        self.done = False
+
     def __eq__(self, other):
         return self.name == other.name and self.done == other.done
 
