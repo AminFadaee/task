@@ -69,19 +69,21 @@ def list_entries(group):
 @click.argument('group', nargs=1)
 @click.option('--txt', 'format', flag_value='txt', default=True, help=config.EXPORT_TXT_HELP)
 @click.option('--pdf', 'format', flag_value='pdf', help=config.EXPORT_PDF_HELP)
+@click.option('--width', 'width', default=60, help=config.EXPORT_WIDTH)
 @click.argument('path', type=click.Path())
-def export(group, format, path):
+def export(group, format, width, path):
     assert os.path.isdir(path)
+    tasks = ClientManagerFactory.create(group).retrieve()
+    presentation = TextPresenter(tasks, max_width=width).present()
     if format == 'txt':
         path = os.path.join(path, group + '.txt')
         with open(path, 'w') as file:
-            file.write(ClientManagerFactory.create(group).retrieve().__str__())
+            file.write(presentation)
     elif format == 'pdf':
         path = os.path.join(path, group + '.pdf')
         pdf = FPDF()
         pdf.add_page()
         pdf.add_font('Onuava', '', './assets/fonts/onuava__.ttf', uni=True)
         pdf.set_font('Onuava', size=12)
-        string = ClientManagerFactory.create(group).retrieve().__str__()
-        pdf.multi_cell(0, 10, string)
+        pdf.multi_cell(0, 10, presentation)
         pdf.output(path, 'F')
