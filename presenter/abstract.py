@@ -8,5 +8,5 @@ class Presenter(ABC):
         self.tasks = tasks
 
     @abstractmethod
-    def present(self):
+    def present(self, only_unfinished_tasks=False):
         pass
