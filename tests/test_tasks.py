@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from tasks import SimpleTasks, Task
-from tasks.errors import UniqueViolationError
+from tasks.errors import UniqueViolationError, ConflictError
 
 
 class TestSimpleTasks(TestCase):
@@ -53,6 +53,32 @@ class TestSimpleTasks(TestCase):
         self.assertRaises(LookupError, tasks.__getitem__, 'tasks 5')
         tasks['tasks 1'].finish()
         self.assertTrue(tasks['tasks 1'].done)
+
+    def test_tasks_getitem_accesses_a_task_in_tasks_even_when_name_matches_partially_based_on_prefix(self):
+        tasks = SimpleTasks('work')
+        tasks.add('one task')
+        tasks.add('two task')
+        tasks.add('three task')
+        self.assertEqual('two task', tasks['two'].name)
+
+    def test_tasks_getitem_partial_match_raises_conflict_error_when_more_than_one_tasks_matches(self):
+        tasks = SimpleTasks('work')
+        tasks.add('one task')
+        tasks.add('two task')
+        tasks.add('three task')
+        self.assertRaises(ConflictError, tasks.__getitem__, 't')
+
+    def test_tasks_setitem_renames_task_correctly(self):
+        tasks = SimpleTasks('work')
+        tasks.add('tasks 1')
+        tasks.add('tasks 2')
+        tasks.add('tasks 3')
+        tasks['tasks 1'] = 'one task'
+        self.assertRaises(LookupError, tasks.__getitem__, 'tasks 1')
+        self.assertEqual('one task', tasks['one task'].name)
+        tasks['one'] = 'yet another name'
+        self.assertRaises(LookupError, tasks.__getitem__, 'one')
+        self.assertEqual('yet another name', tasks['yet another name'].name)
 
     def test_sort_by_name_sorts_correctly(self):
         tasks = SimpleTasks('work')
