@@ -62,6 +62,20 @@ class TestTasksManager(TestCase):
         tasks_manager.add_entry('job 1')
         self.assertRaises(UniqueViolationError, tasks_manager.add_entry, 'job 1')
 
+    def test_manager_edit_renames_task_correctly(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('job 1')
+        tasks_manager.edit_entry('job 1', 'one job')
+        self.assertEqual(1, len(file['./work.foo']['tasks']))
+        self.assertEqual('one job', file['./work.foo']['tasks'][0]['name'])
+
+    def test_manager_edit_renames_task_correctly_given_partial_match_of_task_name_based_on_name_prefix(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('one job')
+        tasks_manager.edit_entry('one', 'yet another job')
+        self.assertEqual(1, len(file['./work.foo']['tasks']))
+        self.assertEqual('yet another job', file['./work.foo']['tasks'][0]['name'])
+
     def tearDown(self) -> None:
         global file
         file = {}
