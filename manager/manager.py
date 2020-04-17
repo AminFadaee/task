@@ -9,17 +9,23 @@ class SimpleTasksManager(TasksManager):
         self._tasks = None
         self.storage = storage
 
-    def add_entry(self, entry: str):
+    def get_entry_full_name(self, partial_name):
+        tasks = self.retrieve()
+        return tasks[partial_name].name
+
+    def add_entry(self, entry: str) -> str:
         tasks = self.retrieve()
         tasks.add(entry)
         self.storage.put(tasks)
+        return tasks[entry].name
 
-    def edit_entry(self, entry: str, new_entry: str):
+    def edit_entry(self, entry: str, new_entry: str) -> str:
         tasks = self.retrieve()
         tasks[entry] = new_entry
         self.storage.put(tasks)
+        return new_entry
 
-    def finish_entry(self, entry: str):
+    def finish_entry(self, entry: str) -> str:
         tasks = self.retrieve()
         if tasks.has(entry):
             tasks[entry].finish()
@@ -27,6 +33,7 @@ class SimpleTasksManager(TasksManager):
             task = tasks.add(entry)
             task.finish()
         self.storage.put(tasks)
+        return tasks[entry].name
 
     def retrieve(self) -> SimpleTasks:
         if self._tasks is None:

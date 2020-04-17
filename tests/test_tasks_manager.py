@@ -76,6 +76,13 @@ class TestTasksManager(TestCase):
         self.assertEqual(1, len(file['./work.foo']['tasks']))
         self.assertEqual('yet another job', file['./work.foo']['tasks'][0]['name'])
 
+    def test_manager_get_full_name_get_the_complete_name_of_the_entry_correctly(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        tasks_manager.add_entry('one job')
+        tasks_manager.add_entry('two job')
+        tasks_manager.add_entry('three job')
+        self.assertEqual('one job', tasks_manager.get_entry_full_name('one'))
+
     def tearDown(self) -> None:
         global file
         file = {}
