@@ -8,6 +8,7 @@ class JsonIO(IO):
     def load_from(self, path: str) -> Dict:
         file = open(path)
         content = file.read()
+        file.close()
         return json.loads(content)
 
     def save_to(self, content: Dict, path: str):
