@@ -2,8 +2,9 @@ from unittest import TestCase
 
 from click.testing import CliRunner
 
+from cli_client import client
 from cli_client import config
-from cli_client.client import task, group, add, edit, finish, list_entries, export
+from cli_client.client import task, add, edit, finish, list_entries, export
 from cli_client.factory import ClientManagerFactory
 from manager.abstract import TasksManager
 from tasks.errors import UniqueViolationError, ConflictError
@@ -12,11 +13,15 @@ storage = {}
 
 
 class ConcreteTasksManager(TasksManager):
+    def get_entry_full_name(self, partial_name):
+        return partial_name
+
     def edit_entry(self, entry: str, new_entry: str):
         global storage
         if self.name not in storage:
             raise LookupError
         storage[self.name] = new_entry
+        return new_entry
 
     def __init__(self, name):
         self.name = name
@@ -131,6 +136,7 @@ class TestClient(TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(edit, ['work', 'task'], input='another task')
             msg = config.FAILED_LOOKUP.format(entry='task', group='work')
+            print(result.output)
             self.assertEqual(0, result.exit_code)
             self.assertTrue(msg in result.output)
             self.assertEqual({}, storage)
@@ -149,13 +155,6 @@ class TestClient(TestCase):
             self.assertTrue(msg in result.output)
             self.assertEqual({}, storage)
             ConcreteTasksManager.edit_entry = original_edit_entry
-
-    def test_finish_helps_outputs_the_help(self):
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            result = runner.invoke(finish, ['--help'])
-            self.assertEqual(0, result.exit_code)
-            self.assertTrue(config.FINISH_HELP in result.output)
 
     def test_edit_outputs_correct_success_text(self):
         runner = CliRunner()
@@ -198,13 +197,6 @@ class TestClient(TestCase):
             self.assertEqual(0, result.exit_code)
             self.assertTrue(config.ADD_FAILED.format(group='work', entry='task 1') in result.output)
 
-    def test_group_helps_outputs_the_help(self):
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            result = runner.invoke(group, ['--help'])
-            self.assertEqual(0, result.exit_code)
-            self.assertTrue(config.GROUP_HELP in result.output)
-
     def test_list_helps_outputs_the_help(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -212,19 +204,41 @@ class TestClient(TestCase):
             self.assertEqual(0, result.exit_code)
             self.assertTrue(config.LIST_HELP in result.output)
 
+    def test_list_uses_text_presenter(self):
+        class MockTextPresenter:
+            def __init__(self, tasks, max_width):
+                TestClient.mock_text_presenter_called = True
+
+            def present(self, only_unfinished_tasks=False):
+                TestClient.mock_text_presenter_only_unfinished_tasks = only_unfinished_tasks
+
+        original_text_presenter = client.TextPresenter
+        client.TextPresenter = MockTextPresenter
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(add, ['work', 'task 1'])
+            runner.invoke(add, ['work', 'task 2'])
+            runner.invoke(list_entries, ['work'])
+            self.assertTrue(TestClient.mock_text_presenter_called)
+            self.assertFalse(TestClient.mock_text_presenter_only_unfinished_tasks)
+            runner.invoke(list_entries, ['work', '-u'])
+            self.assertTrue(TestClient.mock_text_presenter_called)
+            self.assertTrue(TestClient.mock_text_presenter_only_unfinished_tasks)
+        client.TextPresenter = original_text_presenter
+
+    def test_finish_helps_outputs_the_help(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(finish, ['--help'])
+            self.assertEqual(0, result.exit_code)
+            self.assertTrue(config.FINISH_HELP in result.output)
+
     def test_export_helps_outputs_the_help(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(export, ['--help'])
             self.assertEqual(0, result.exit_code)
             self.assertTrue(config.EXPORT_HELP in result.output)
-
-    def test_group_adds_a_tasks_correctly(self):
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            result = runner.invoke(group, ['foo'])
-            self.assertEqual(0, result.exit_code)
-            self.assertTrue(storage['retrieve_called'])
 
     def tearDown(self) -> None:
         global storage

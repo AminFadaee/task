@@ -12,7 +12,10 @@ FAILED_LOOKUP = 'Entry {entry} not found in {group}!'
 
 FINISH_HELP = 'Finish an entry in a specific group (accepts non-existing entries).'
 GROUP_HELP = 'Add a group of tasks.'
+
 LIST_HELP = 'List all the entries in a group.'
+LIST_UNFINISHED = 'List only the unfinished entries.'
+
 EXPORT_HELP = 'Export the tasks group to txt/pdf format.'
 EXPORT_TXT_HELP = 'Export to .txt file (default)'
 EXPORT_PDF_HELP = 'Export to .pdf file'
