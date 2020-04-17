@@ -4,6 +4,7 @@ source = .
 omit =
     setup.py
     tests/*
+    exporter/*
 
 [report]
 exclude_lines =

@@ -1,9 +1,8 @@
-import os
-
 import click
-from fpdf import FPDF
 
 from cli_client.factory import ClientManagerFactory
+from exporter.pdf_exporter import PDFExporter
+from exporter.text_exporter import TXTExporter
 from presenter.presenter import TextPresenter
 from tasks.errors import UniqueViolationError, ConflictError
 from . import config
@@ -34,7 +33,7 @@ def edit(group, entry):
     manager = ClientManagerFactory.create(group)
     try:
         full_name = manager.get_entry_full_name(partial_name=entry)
-        new_entry = click.prompt('Enter the new name for {entry}'.format(entry=full_name), default=full_name)
+        new_entry = click.prompt(config.EDIT_HELP.format(entry=full_name), default=full_name)
         task_name = manager.edit_entry(full_name, new_entry)
         click.echo(config.EDIT_SUCCESS.format(entry=full_name, group=group, new_entry=task_name))
     except LookupError:
@@ -61,7 +60,7 @@ def finish(group, entry):
     manager = ClientManagerFactory.create(group)
     full_name = manager.get_entry_full_name(entry)
     manager.finish_entry(full_name)
-    click.secho(f'Congrats! Entry {full_name} is finished!')
+    click.secho(config.FINISH_SUCCESS.format(entry=full_name))
 
 
 @task.command(help=config.UNDO_HELP)
@@ -72,7 +71,7 @@ def undo(group, entry):
     manager = ClientManagerFactory.create(group)
     full_name = manager.get_entry_full_name(entry)
     manager.undo_entry(full_name)
-    click.secho(f'Entry {full_name} was reverted back to unfinished!')
+    click.secho(config.UNDO_SUCCESS.format(entry=full_name))
 
 
 @task.command(help=config.EXPORT_HELP)
@@ -82,18 +81,11 @@ def undo(group, entry):
 @click.option('--width', 'width', default=60, help=config.EXPORT_WIDTH)
 @click.argument('path', type=click.Path())
 def export(group, format, width, path):
-    assert os.path.isdir(path)
     tasks = ClientManagerFactory.create(group).retrieve()
     presentation = TextPresenter(tasks, max_width=width).present()
-    if format == 'txt':
-        path = os.path.join(path, group + '.txt')
-        with open(path, 'w') as file:
-            file.write(presentation)
-    elif format == 'pdf':
-        path = os.path.join(path, group + '.pdf')
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.add_font('Onuava', '', './assets/fonts/onuava__.ttf', uni=True)
-        pdf.set_font('Onuava', size=12)
-        pdf.multi_cell(0, 10, presentation)
-        pdf.output(path, 'F')
+    if format == 'pdf':
+        exporter = PDFExporter(path, file_name=group)
+    else:
+        exporter = TXTExporter(path, file_name=group)
+    exporter.export(presentation)
+    click.echo(config.EXPORT_SUCCESS.format(group=group, path=exporter.path))

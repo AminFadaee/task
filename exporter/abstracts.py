@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 
 
 class Exporter(ABC):
+    path: str
+
     def __init__(self, path: str, file_name: str):
         if not os.path.isdir(path):
             os.makedirs(path)
