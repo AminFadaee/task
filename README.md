@@ -46,6 +46,9 @@ or to `.pdf`:
 I try to add sorting feature for list and exports, also I might try
 to add attributes to each task (due date, urgency, ...).
 
+The big next feature would be syncing the tasks in the cloud so
+you could access your tasks anywhere.
+
 ## Author
 Amin Fadaee
 
