@@ -42,6 +42,11 @@ or to `.pdf`:
 
 ![](assets/samples/pdf.png)
 
+## Installation
+Install using python 3.8 and pip3:
+```bash
+pip3 install cli-task
+```
 ## Future
 I try to add sorting feature for list and exports, also I might try
 to add attributes to each task (due date, urgency, ...).
