@@ -33,7 +33,7 @@ def edit(group, entry):
     manager = ClientManagerFactory.create(group)
     try:
         full_name = manager.get_entry_full_name(partial_name=entry)
-        new_entry = click.prompt(config.EDIT_HELP.format(entry=full_name), default=full_name)
+        new_entry = click.prompt(config.EDIT_NEW_NAME_PROMPT.format(entry=full_name), default=full_name)
         task_name = manager.edit_entry(full_name, new_entry)
         click.echo(config.EDIT_SUCCESS.format(entry=full_name, group=group, new_entry=task_name))
     except LookupError:
