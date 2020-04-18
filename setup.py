@@ -7,7 +7,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 setup(
-    name='task',
+    name='cli-task',
     version='0.1',
     description='A simple cli to-do list.',
     long_description=README,
