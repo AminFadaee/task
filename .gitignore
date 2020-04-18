@@ -5,3 +5,4 @@ task.egg-info
 .coverage
 build
 dist
+cli_task.egg-info
