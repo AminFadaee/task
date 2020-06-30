@@ -7,8 +7,11 @@ ADD_FAILED = 'Entry {entry} already in {group}!'
 EDIT_HELP = 'Edit an entry in a specific group (prefix matches are valid).'
 EDIT_NEW_NAME_PROMPT = 'Enter the new name for {entry}'
 EDIT_SUCCESS = 'Entry {entry} in {group} changed to {new_entry}.'
-EDIT_FAILED_CONFLICT = 'More than one entry match for {entry} in {group}!'
 
+REMOVE_HELP = 'Remove an entry from a specific group (prefix matches are valid).'
+REMOVE_SUCCESS = 'Entry {entry} in {group} removed.'
+
+CONFLICTING_ENTRIES = 'More than one entry match for {entry} in {group}!'
 FAILED_LOOKUP = 'Entry {entry} not found in {group}!'
 
 FINISH_HELP = 'Finish an entry in a specific group (accepts non-existing entries).'

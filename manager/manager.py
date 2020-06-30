@@ -25,6 +25,11 @@ class SimpleTasksManager(TasksManager):
         self.storage.put(tasks)
         return new_entry
 
+    def delete_entry(self, entry: str) -> None:
+        tasks = self.retrieve()
+        tasks.delete(entry)
+        self.storage.put(tasks)
+
     def finish_entry(self, entry: str) -> str:
         tasks = self.retrieve()
         if tasks.has(entry):

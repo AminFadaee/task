@@ -39,7 +39,23 @@ def edit(group, entry):
     except LookupError:
         click.secho(config.FAILED_LOOKUP.format(entry=entry, group=group), fg='red')
     except ConflictError:
-        click.secho(config.EDIT_FAILED_CONFLICT.format(entry=entry, group=group), fg='red')
+        click.secho(config.CONFLICTING_ENTRIES.format(entry=entry, group=group), fg='red')
+
+
+@task.command(help=config.REMOVE_HELP)
+@click.argument('group', nargs=1)
+@click.argument('entry', nargs=-1, required=True)
+def remove(group, entry):
+    entry = ' '.join(word for word in entry)
+    manager = ClientManagerFactory.create(group)
+    try:
+        full_name = manager.get_entry_full_name(partial_name=entry)
+        task_name = manager.delete_entry(full_name)
+        click.echo(config.REMOVE_SUCCESS.format(entry=full_name, group=group, new_entry=task_name))
+    except LookupError:
+        click.secho(config.FAILED_LOOKUP.format(entry=entry, group=group), fg='red')
+    except ConflictError:
+        click.secho(config.CONFLICTING_ENTRIES.format(entry=entry, group=group), fg='red')
 
 
 @task.command(name='list', help=config.LIST_HELP)
