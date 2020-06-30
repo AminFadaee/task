@@ -3,8 +3,8 @@
 [![PyPI download total](https://img.shields.io/pypi/dm/cli-task)](https://pypi.org/project/cli-task/)
 [![PyPI Version](https://img.shields.io/pypi/v/cli-task.svg)](https://pypi.org/project/cli-task/)
 [![PyPI py versions](https://img.shields.io/pypi/pyversions/cli-task.svg)](https://pypi.org/project/cli-task/)
-[![GitHub stars](https://img.shields.io/github/stars/AminFadaee/task?style=social&label=Star&maxAge=2592000)](https://github.com/AminFadaee/task)
 [![Coverage](./coverage.svg)](https://github.com/AminFadaee/task)
+[![GitHub stars](https://img.shields.io/github/stars/AminFadaee/task?style=social&label=Star&maxAge=2592000)](https://github.com/AminFadaee/task)
 
 A simple cli to-do list. Created using python and click library.
 ## How to
