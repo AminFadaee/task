@@ -2,6 +2,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/AminFadaee/task/graphs/commit-activity)
 [![PyPI download total](https://img.shields.io/pypi/dm/cli-task)](https://pypi.org/project/cli-task/)
 [![PyPI Version](https://img.shields.io/pypi/v/cli-task.svg)](https://pypi.org/project/cli-task/)
+[![PyPI py versions](https://img.shields.io/pypi/pyversions/cli-task.svg)](https://pypi.org/project/cli-task/)
 
 A simple cli to-do list. Created using python and click library.
 ## How to
