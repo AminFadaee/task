@@ -1,4 +1,6 @@
 # Task
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/AminFadaee/task/graphs/commit-activity)
+
 A simple cli to-do list. Created using python and click library.
 ## How to
 Create a task belonging to a group:
