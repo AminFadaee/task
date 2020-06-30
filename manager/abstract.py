@@ -17,6 +17,10 @@ class TasksManager(ABC):
         pass
 
     @abstractmethod
+    def delete_entry(self, entry: str) -> str:
+        pass
+
+    @abstractmethod
     def edit_entry(self, entry: str, new_entry: str) -> str:
         pass
 

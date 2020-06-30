@@ -28,6 +28,12 @@ class SimpleTasks(Tasks):
         self._task_names.add(task_name)
         return task
 
+    def delete(self, task_name: str):
+        index = self._find_task_index_based_on_full_match_or_prefix_match_on_name(task_name)
+        full_name = self._tasks[index].name
+        self._task_names.remove(full_name)
+        del self._tasks[index]
+
     def _find_task_index_based_on_full_match_or_prefix_match_on_name(self, task_name):
         matched_indices = []
         for index, task in enumerate(self._tasks):

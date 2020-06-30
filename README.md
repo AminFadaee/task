@@ -47,6 +47,15 @@ Install using python 3.8 and pip3:
 ```bash
 pip3 install cli-task
 ```
+
+## Versions
+### 0.2.0
+* Added remove functionality:
+
+    ```bash
+    ~ task remove Movies John
+    ```
+
 ## Future
 I try to add sorting feature for list and exports, also I might try
 to add attributes to each task (due date, urgency, ...).

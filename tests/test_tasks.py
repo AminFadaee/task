@@ -125,3 +125,34 @@ class TestSimpleTasks(TestCase):
         self.assertFalse(tasks.has('tasks 3'))
         self.assertTrue(tasks.has('tasks 2'))
         self.assertTrue(tasks.has('tasks 1'))
+
+    def test_delete_correctly_deletes_a_task(self):
+        tasks = SimpleTasks('work')
+        tasks.add('tasks 1')
+        tasks.add('tasks 2')
+        tasks.add('tasks 3')
+        self.assertTrue(tasks.has('tasks 1'))
+        self.assertTrue(tasks.has('tasks 2'))
+        self.assertTrue(tasks.has('tasks 3'))
+        tasks.delete('tasks 2')
+        self.assertTrue(tasks.has('tasks 1'))
+        self.assertTrue(not tasks.has('tasks 2'))
+        self.assertTrue(tasks.has('tasks 3'))
+
+    def test_delete_correctly_deletes_a_task_with_prefix_match(self):
+        tasks = SimpleTasks('work')
+        tasks.add('first task')
+        tasks.add('second task')
+        tasks.add('third task')
+        self.assertTrue(tasks.has('first task'))
+        self.assertTrue(tasks.has('second task'))
+        self.assertTrue(tasks.has('third task'))
+        tasks.delete('sec')
+        self.assertTrue(tasks.has('first task'))
+        self.assertTrue(not tasks.has('second task'))
+        self.assertTrue(tasks.has('third task'))
+
+    def test_delete_raises_lookup_error_when_task_not_present(self):
+        tasks = SimpleTasks('work')
+        tasks.add('tasks 1')
+        self.assertRaises(LookupError, tasks.delete, 'tasks 2')

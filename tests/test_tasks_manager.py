@@ -96,6 +96,17 @@ class TestTasksManager(TestCase):
         tasks_manager.add_entry('three job')
         self.assertEqual('one job', tasks_manager.get_entry_full_name('one'))
 
+    def test_manager_delete_entry_deletes_the_entry_correctly(self):
+        tasks_manager = SimpleTasksManager('work', self.storage)
+        jobs = ['one job', 'two job', 'three job']
+        for job in jobs:
+            tasks_manager.add_entry(job)
+        saved_jobs = [file['./work.foo']['tasks'][i]['name'] for i in range(len(file['./work.foo']['tasks']))]
+        self.assertEqual(saved_jobs, jobs)
+        tasks_manager.delete_entry('two job')
+        saved_jobs = [file['./work.foo']['tasks'][i]['name'] for i in range(len(file['./work.foo']['tasks']))]
+        self.assertEqual(['one job', 'three job'], saved_jobs)
+
     def tearDown(self) -> None:
         global file
         file = {}
