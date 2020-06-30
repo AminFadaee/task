@@ -4,7 +4,7 @@ from click.testing import CliRunner
 
 from cli_client import client
 from cli_client import config
-from cli_client.client import task, add, edit, finish, list_entries, export, undo
+from cli_client.client import task, add, edit, finish, list_entries, export, undo, remove
 from cli_client.factory import ClientManagerFactory
 from manager.abstract import TasksManager
 from tasks.errors import UniqueViolationError, ConflictError
@@ -13,6 +13,12 @@ storage = {}
 
 
 class ConcreteTasksManager(TasksManager):
+    def delete_entry(self, entry: str) -> str:
+        global storage
+        if self.name not in storage:
+            raise LookupError
+        storage[self.name].remove(entry)
+
     def get_entry_full_name(self, partial_name):
         return partial_name
 
@@ -158,7 +164,7 @@ class TestClient(TestCase):
             original_edit_entry = ConcreteTasksManager.edit_entry
             ConcreteTasksManager.edit_entry = patched_edit
             result = runner.invoke(edit, ['work', 'task'], input='another task')
-            msg = config.EDIT_FAILED_CONFLICT.format(entry='task', group='work')
+            msg = config.CONFLICTING_ENTRIES.format(entry='task', group='work')
             self.assertEqual(0, result.exit_code)
             self.assertTrue(msg in result.output)
             self.assertEqual({}, storage)
@@ -169,41 +175,83 @@ class TestClient(TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task_1'])
             self.assertEqual(0, result.exit_code)
-            self.assertTrue(config.ADD_SUCCESS.format(group='work', entry='task_1') in result.output)
-
-    def test_edit_creates_group_if_not_existing(self):
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            result = runner.invoke(add, ['work', 'task_1'])
+            result = runner.invoke(edit, ['work', 'task_1'], input='task_2')
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task_1', storage['work'][0])
+            self.assertTrue(
+                config.EDIT_SUCCESS.format(group='work', entry='task_1', new_entry='task_2') in result.output)
 
     def test_edit_accepts_entry_with_spaces(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'this', 'is', 'an', 'entry', 'with', 'spaces'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('this is an entry with spaces', storage['work'][0])
+            result = runner.invoke(edit, ['work', 'this', 'is', 'an', 'entry', 'with', 'spaces'], input='new_task')
+            self.assertEqual(0, result.exit_code)
+            self.assertEqual('new_task', storage['work'])
 
-    def test_edit_correctly_adds_to_an_already_existing_group(self):
+    def test_remove_helps_outputs_the_help(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(remove, ['--help'])
+            self.assertEqual(0, result.exit_code)
+            self.assertTrue(config.REMOVE_HELP in result.output)
+
+    def test_remove_removes_the_task_correctly(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(add, ['work', 'task 1'])
             self.assertEqual(0, result.exit_code)
-            self.assertEqual('task 1', storage['work'][0])
             result = runner.invoke(add, ['work', 'task 2'])
             self.assertEqual(0, result.exit_code)
+            self.assertEqual('task 1', storage['work'][0])
             self.assertEqual('task 2', storage['work'][1])
-
-    def test_edit_does_not_print_error_when_entry_already_exists(self):
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            result = runner.invoke(add, ['work', 'task 1'])
+            result = runner.invoke(remove, ['work', 'task 2'])
             self.assertEqual(0, result.exit_code)
             self.assertEqual('task 1', storage['work'][0])
-            result = runner.invoke(add, ['work', 'task 1'])
+            self.assertEqual(1, len(storage['work']))
+
+    def test_remove_prints_error_if_entry_does_not_exists(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(remove, ['work', 'task'])
+            msg = config.FAILED_LOOKUP.format(entry='task', group='work')
+            print(result.output)
             self.assertEqual(0, result.exit_code)
-            self.assertTrue(config.ADD_FAILED.format(group='work', entry='task 1') in result.output)
+            self.assertTrue(msg in result.output)
+            self.assertEqual({}, storage)
+
+    def test_remove_prints_error_if_entry_matches_more_than_one_tasks(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            def patched_remove(*args, **kwargs):
+                raise ConflictError
+
+            original_remove_entry = ConcreteTasksManager.delete_entry
+            ConcreteTasksManager.delete_entry = patched_remove
+            result = runner.invoke(remove, ['work', 'task'])
+            msg = config.CONFLICTING_ENTRIES.format(entry='task', group='work')
+            self.assertEqual(0, result.exit_code)
+            self.assertTrue(msg in result.output)
+            self.assertEqual({}, storage)
+            ConcreteTasksManager.delete_entry = original_remove_entry
+
+    def test_remove_outputs_correct_success_text(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(add, ['work', 'task_1'])
+            self.assertEqual(0, result.exit_code)
+            result = runner.invoke(remove, ['work', 'task_1'])
+            self.assertEqual(0, result.exit_code)
+            self.assertTrue(config.REMOVE_SUCCESS.format(group='work', entry='task_1') in result.output)
+
+    def test_remove_accepts_entry_with_spaces(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(add, ['work', 'this', 'is', 'an', 'entry', 'with', 'spaces'])
+            self.assertEqual(0, result.exit_code)
+            result = runner.invoke(remove, ['work', 'this', 'is', 'an', 'entry', 'with', 'spaces'])
+            self.assertEqual(0, result.exit_code)
+            self.assertEqual(storage['work'], [])
 
     def test_list_helps_outputs_the_help(self):
         runner = CliRunner()
