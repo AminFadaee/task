@@ -8,7 +8,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name='cli-task',
-    version='0.1.1',
+    version='0.2.0',
     description='A simple cli to-do list.',
     long_description=README,
     long_description_content_type="text/markdown",
