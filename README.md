@@ -65,5 +65,3 @@ you could access your tasks anywhere.
 
 ## Author
 Amin Fadaee
-
-Checkout my channel: [BackendLife](https://t.me/backendlife)
